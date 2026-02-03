@@ -192,7 +192,6 @@ void runServer(char* argv[])
 				positionsPacket << CLIENT_POSITIONS;
 				for(int j = 0; j < playerCount; j++)
 				{
-					cout << players[j].point->getPos().x << endl;
 					positionsPacket << players[j];
 				}
 				UDP.send(positionsPacket, ips[i], ports[i]);
@@ -356,7 +355,7 @@ void runClient(char* argv[])
 		}
 		this_thread::sleep_for(chrono::milliseconds(1));
 	});
-	thread getUpdate = thread([&running, &players, &clientUDP, &posMutex, serverIp, udpPort, playerCount, &pId](){
+	thread getUpdate = thread([&running, &players, &clientUDP, &posMutex, serverIp, udpPort, playerCount, &pId, &pe](){
 		optional<IpAddress> adress = serverIp;
 		unsigned short port = udpPort;
 		while(running)
@@ -376,6 +375,15 @@ void runClient(char* argv[])
 						{
 							if(i != pId)
 								positionsPacket >> players[i];
+							else
+							{
+								float dummy;
+								positionsPacket 
+								>> dummy 
+								>> dummy 
+								>> dummy 
+								>> dummy;
+							}
 						}
 					break;
 				}

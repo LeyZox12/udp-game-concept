@@ -146,16 +146,20 @@ inline Packet& operator<<(Packet& p, Player& player)
 {
 	Point& pt = *player.point;
 	return p 
-	<< *player.point
+	<< pt.getPos().x
+	<< pt.getPos().y
 	<< player.rot 
 	<< player.hp;
 }
 
 inline Packet& operator>>(Packet& p, Player& player)
 {
-	return 
+	Vector2f pos;
 	p 
-	>> *player.point
+	>> pos.x
+	>> pos.y
 	>> player.rot
 	>> player.hp;
+	player.point->setPos(pos, true);
+	return p;
 }
