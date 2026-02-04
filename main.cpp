@@ -334,7 +334,7 @@ void runClient(char* argv[])
 								if(col == Color::White)
 								{
 									block = HARD;
-									pe.addRectangle(IntRect({j * BLOCK_SIZE, i*BLOCK_SIZE},{BLOCK_SIZE, BLOCK_SIZE}));
+									pe.addRectangle(IntRect({j * BLOCK_SIZE, i*BLOCK_SIZE},{BLOCK_SIZE, BLOCK_SIZE}), 200.f);
 								}
 								else if(col == Color(255, 0, 0)) block = DEATH;
 								else if(col == Color(0, 255, 0))

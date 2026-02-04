@@ -18,7 +18,6 @@ inline Packet& operator<<(Packet& p, Point& point)
 	<< point.getColor().r 
 	<< point.getColor().g
 	<< point.getColor().a
-	<< point.getFriction()
 	<< point.getGravityScale()
 	<< point.getIsStatic()
 	<< point.getOldPos().x
@@ -61,7 +60,6 @@ inline Packet& operator>>(Packet& p, Point& point)
 	point.setPos(pos, true);
 	point.setAcc(acc);
 	point.setColor(Color(col.r, col.g, col.b, col.a));
-	point.setFriction(friction);
 	point.setOldPos(oldPos);
 	point.setGravityScale(gravityScale);
 	point.setRadius(radius);
@@ -124,7 +122,7 @@ inline Packet& operator>>(Packet& p, PointEngine &pe)
 			point.getIsStatic(), 
 			point.getShouldCollide(), 
 			point.getRadius(), 
-			point.getFriction()
+			point.getMass()//not sending this
 		);
 
 	}

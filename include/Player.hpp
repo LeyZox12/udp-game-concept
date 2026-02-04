@@ -15,7 +15,7 @@ struct Player
 	Player(PointEngine& pe, Vector2f pos)
 	:pe(pe)
 	{
-		pe.addPoint(pos, false, false, PLAYER_RADIUS, PLAYER_FRICTION, 1000.f);
+		pe.addPoint(pos, false, false, PLAYER_RADIUS, 1000.f);
 		coreIndex = pe.getPointCount()-1;
 		pe.getPoint(coreIndex).setGravityScale(0.3);
 
