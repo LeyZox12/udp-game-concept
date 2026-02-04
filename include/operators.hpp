@@ -65,7 +65,7 @@ inline Packet& operator>>(Packet& p, Point& point)
 	point.setOldPos(oldPos);
 	point.setGravityScale(gravityScale);
 	point.setRadius(radius);
-	point.setIsStatic(true);
+	point.setIsStatic(isStatic);
 	return p;
 }
 
@@ -144,10 +144,9 @@ inline Packet& operator>>(Packet& p, PointEngine &pe)
 
 inline Packet& operator<<(Packet& p, Player& player)
 {
-	Point& pt = *player.point;
 	return p 
-	<< pt.getPos().x
-	<< pt.getPos().y
+	<< player.getPos().x
+	<< player.getPos().y
 	<< player.rot 
 	<< player.hp;
 }
@@ -160,6 +159,6 @@ inline Packet& operator>>(Packet& p, Player& player)
 	>> pos.y
 	>> player.rot
 	>> player.hp;
-	player.point->setPos(pos, true);
+	player.setPos(pos);
 	return p;
 }

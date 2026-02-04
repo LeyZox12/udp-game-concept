@@ -127,7 +127,7 @@ void runServer(char* argv[])
 			ips.emplace_back(playersTCP.back().getRemoteAddress().value());
 			cout << "New player Joined " << playersTCP.back().getRemotePort();
 			Packet udpPacket;
-			players.push_back(Player(*pointEngines[playerCount]));
+			players.emplace_back(Player(*pointEngines[playerCount], Vector2f(100, 0)));
 			udpPacket << UDP_PORT << UDP.getLocalPort() << playerCount << 2;
 			if(playersTCP.back().send(udpPacket) != Socket::Status::Done){
 				cout << "Couldn't receive player correctly, closing program";
@@ -179,9 +179,9 @@ void runServer(char* argv[])
 				{
 					int type, count, key, index;
 					p >> type;
-					p >> index;
 					if(type == PACKET_TYPE::CLIENT_MOVE)
 					{
+                        p >> index;
 						p >> players[index];
 					}
 					p.clear();
@@ -267,10 +267,12 @@ void runClient(char* argv[])
 		if(type == UDP_PORT)
 		{
 			pingPacket >> udpPort >> pId >> playerCount;
-			players = vector<Player>(playerCount, Player(pe));
-			///TODO FIX THIS LINE CRASHES EVERYTHING 
-			pe.addPoint(vec2(0, 0), false, true, PLAYER_RADIUS, PLAYER_FRICTION);
-			players[pId].point = &pe.getPoint(0);
+            cout <<"playercount:"<< playerCount << endl;
+            for(int i = 0; i < playerCount; i++)
+            {
+                players.emplace_back(Player(pe, Vector2f(100, 0)));
+            }
+            window.setPosition(Vector2i(pId * 512, 0));
 		}
 		cout << "Recieved udp port from server:" << udpPort << endl;
 	}
@@ -321,14 +323,14 @@ void runClient(char* argv[])
 						packet >> mapName;
 						Image sprite;
 						sprite.loadFromFile(mapName);
-						map = vector<vector<int>>(sprite.getSize().x, vector<int>(sprite.getSize().y, VOID));
+						map = vector<vector<int>>(sprite.getSize().x, vector<int>(sprite.getSize().y, EMPTY));
 						for(int i = 0; i < sprite.getSize().y; i++)
 						{
 							for(int j = 0; j < sprite.getSize().x; j++)
 							{
 								
 								Color col = sprite.getPixel(Vector2u(j, i));
-								int block = VOID;
+								int block = EMPTY;
 								if(col == Color::White)
 								{
 									block = HARD;
@@ -337,10 +339,12 @@ void runClient(char* argv[])
 								else if(col == Color(255, 0, 0)) block = DEATH;
 								else if(col == Color(0, 255, 0))
 								{
+                                    static int spawnId = 0;
 									block = SPAWN;
-									//TODO CHANGE THIS TO SOMETHING BETTER
-									players[pId].point->setPos(vec2(j * BLOCK_SIZE, i * BLOCK_SIZE), false);
-									players[pId].point->setOldPos(players[pId].point->getPos());
+                                    if(spawnId++ == pId){
+                                        players[pId].setPos(vec2(j * BLOCK_SIZE, i * BLOCK_SIZE - pId * PLAYER_RADIUS * 3));
+                                        players[pId].setOldPos(players[pId].getPos());
+                                    }
 								}
 								else if(col == Color(128, 128, 128)) block = PLATFORM;
 								cout << block;
@@ -424,7 +428,7 @@ void runClient(char* argv[])
 				}
 			}
 		}
-		Vector2f diff = (Vector2f)Mouse::getPosition(window) - players[pId].point->getPos();
+		Vector2f diff = (Vector2f)Mouse::getPosition(window) - players[pId].getPos();
 
 		for(auto& key: heldKeys)
 		{
@@ -433,12 +437,12 @@ void runClient(char* argv[])
 				case(Keyboard::Key::Z):
 					break;
 				case(Keyboard::Key::Q):
-					players[pId].point->setPos(players[pId].point->getPos() + vec2(-PLAYER_SPEED * dt, 0), false);
+					players[pId].setPos(players[pId].getPos() + vec2(-PLAYER_SPEED * dt, 0));
 					break;
 				case(Keyboard::Key::S):
 					break;
 				case(Keyboard::Key::D):
-					players[pId].point->setPos(players[pId].point->getPos() + vec2(PLAYER_SPEED * dt, 0), false);
+					players[pId].setPos(players[pId].getPos() + vec2(PLAYER_SPEED * dt, 0));
 					break;
 				default:
 				break;
@@ -450,9 +454,7 @@ void runClient(char* argv[])
 		pe.applyCollisions(4);
 		pe.applyConstraints(4, dt);
 
-		players[pId].camera.setCenter(players[pId].point->getPos());
-
-
+		players[pId].camera.setCenter(players[pId].getPos());
 
 		window.clear(Color::Black);
 		window.setView(players[pId].camera);
@@ -463,13 +465,14 @@ void runClient(char* argv[])
 		}
 		for(int i = 0; i < players.size(); i++)
 		{
-			sprite.setPosition(players[i].point->getPos());
+			sprite.setPosition(players[i].getPos());
 			sprite.setRotation(radians(players[i].rot));
 			window.draw(sprite);
 		}
-		pe.display(window, Color::White);
+		pe.displayAsRects(window, Color::White, 5.f);
+
 		window.display();
-		dt = deltaClock.restart().asSeconds();
+		dt = deltaClock.restart().asSeconds() * 1.1;
 		window.setTitle(format("{:}", 1.f / dt));
 	}
 	clientUDP.unbind();
